@@ -10,34 +10,26 @@
 
 I had to create a index on `targetId` otherwise it would take too long time for depth #1.
 
-## NEO4J
-After a lot of try I was not able to get it working. My first problems was that I was not able to connect, after I made local DB instead, I had trouble getting the data into the DB. After I got that working I was able to search for persons and endorsement, by I was not able to get the "endorses" working (all queries returned 0 records)
+## NEO4J Setup
 
-I tried some the queries that the other groups had made, but that did not work either..
-
-See the picture for that the data is in Neo
-
-![graph](graph.PNG)
-
-For creating the relationship I did
-
+### Create persons
 ```
-MATCH (p:Endorsement),(s:Person)
-WHERE p.target_node_id = s.node_id
-CREATE (s)-[:ENDORSES]->(p)
+LOAD CSV FROM "file:///social_network_nodes_small.csv" AS line
+CREATE (:Person { node_id: line[0], name: line[1], job: line[2], birthdate: line[3] });
 ```
 
-And for reading I did
-
+### Create relations
 ```
-MATCH (a:Person {node_id: "174" })-[b:Muhaha*1]->(c:Person)
+LOAD CSV FROM "file:///social_network_edges_small.csv" AS line
+MATCH (p1:Person { node_id: line[0] })
+MATCH (p2:Person { node_id: line[1] })
+CREATE (p1)-[:ENDORSES]->(p2)
+```
+
+### Query
+```
+MATCH (a:Person {node_id: "20" })-[b:ENDORSES*2]->(c:Person)
 RETURN c
 ```
 
-If I do
-```
-MATCH (a:Person {node_id: "174" })
-RETURN a
-```
-
-I am able to find the person.
+Vi kan ændre "20" og 2. 20 er noden, og 2 er hvor langt vi vil gå ud.
